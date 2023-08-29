@@ -76,23 +76,20 @@ func main() {
 		response.Prices[i], response.Prices[j] = response.Prices[j], response.Prices[i]
 	}
 
-	now := time.Now().UTC()
-
 	tomorrow := time.Now().Add(time.Hour * 24)
 	tomorrow = time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 0, 0, 0, 0, time.Local)
 	warnings := make([]Warning, 0)
 
 	var startTime time.Time
 	var startSet bool = false
-	for _, v := range response.Prices {
+	for i, v := range response.Prices {
 		if v.StartDate.Local().Before(tomorrow) {
 			continue
 		}
-
-		if v.StartDate.After(now) && v.Price > float32(args.Threshold) && !startSet {
+		if v.StartDate.After(tomorrow) && v.Price > float32(args.Threshold) && !startSet {
 			startTime = time.Date(v.StartDate.Year(), v.StartDate.Month(), v.StartDate.Day(), v.StartDate.Hour(), v.StartDate.Minute(), v.StartDate.Second(), 0, v.StartDate.Location())
 			startSet = true
-		} else if v.Price <= float32(args.Threshold) && startSet {
+		} else if (v.Price <= float32(args.Threshold) || i == len(response.Prices)-1) && startSet {
 			warnings = append(warnings, Warning{Starts: startTime, Ends: v.StartDate})
 			startSet = false
 		}
